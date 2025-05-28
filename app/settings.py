@@ -149,26 +149,37 @@ WSGI_APPLICATION = 'app.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databasecd l
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Use MySQL engine
-        'NAME': 'kenshi_db1',                 # Your database name
-        'USER': 'kenshi',                     # Your MySQL username
-        'PASSWORD': '123456',                  # Your MySQL password
-        'HOST': 'localhost',                   # MySQL server host (localhost if on the same machine)
-        'PORT': '3306',                        # MySQL default port
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': 'SET default_storage_engine=InnoDB; SET character_set_connection=utf8mb4; SET collation_connection=utf8mb4_unicode_ci; SET sql_mode="NO_ENGINE_SUBSTITUTION";'
+# Update database configuration based on environment
+if 'DATABASE_URL' in os.environ:
+    # Production database (Heroku PostgreSQL)
+    DATABASES = {
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Development database (Local MySQL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'kenshi_db1',
+            'USER': 'kenshi',
+            'PASSWORD': '123456',
+            'HOST': 'localhost',
+            'PORT': '3306',
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': 'SET default_storage_engine=InnoDB; SET character_set_connection=utf8mb4; SET collation_connection=utf8mb4_unicode_ci; SET sql_mode="NO_ENGINE_SUBSTITUTION";'
+            }
         }
     }
-}
 
-# Update database configuration for Heroku
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
+# Remove the old database update since we're handling it above
+# db_from_env = dj_database_url.config(conn_max_age=600)
+# DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
