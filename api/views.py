@@ -215,3 +215,6 @@ class ProductReviewView(APIView):
             return Response({
                 'error': 'Failed to delete review'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+print("hello world!")
