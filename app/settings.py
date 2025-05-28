@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,13 +27,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ol)ys&ka1b_cilp_&hf@^v4epou8ej2v8mdmuaor3!iqq429ip'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['kent-e-commerce-backend-6329a7fdf12e.herokuapp', '127.0.0.1']
+ALLOWED_HOSTS = [
+    '*',
+    '172.22.201.82:3000',
+    'kent-e-commerce-backend-6329a7fdf12e.herokuapp.com'
+]
 
 # Media files configuration
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/kenshi/Development/app/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Add to INSTALLED_APPS if not already present
 INSTALLED_APPS = [
@@ -60,7 +65,10 @@ CORS_ALLOW_METHODS = [
 ]
 
 # Add media types to CORS
-CORS_ALLOWED_ORIGINS = ['http://172.22.201.82:3000', 'kent-e-commerce-backend-6329a7fdf12e.herokuapp']
+CORS_ALLOWED_ORIGINS = [
+    'http://172.22.201.82:3000',
+    'https://kent-e-commerce-backend-6329a7fdf12e.herokuapp.com'
+]
 
 # Application definition
 
@@ -158,6 +166,9 @@ DATABASES = {
     }
 }
 
+# Update database configuration for Heroku
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -193,8 +204,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Enable WhiteNoise's GZip compression
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -205,7 +219,7 @@ CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access to the cookie
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_DOMAIN = None
-CSRF_COOKIE_SECURE = False  # Set to True in production
+CSRF_COOKIE_SECURE = True
 
 AUTH_USER_MODEL = 'api.User'
 
@@ -236,3 +250,13 @@ SIMPLE_JWT = {
 
     'JTI_CLAIM': 'jti',
 }
+
+# Security settings for production
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
