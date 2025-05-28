@@ -151,17 +151,27 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Update database configuration based on environment
-if 'DATABASE_URL' in os.environ:
-    # Production database (Heroku PostgreSQL)
+# Database Configuration
+if os.environ.get('DATABASE_URL'):
+    # Running on Heroku
     DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', ''),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', ''),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
     }
+    # Update with Heroku database URL
+    DATABASES['default'].update(dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=True
+    ))
 else:
-    # Development database (Local MySQL)
+    # Local development database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -177,9 +187,16 @@ else:
         }
     }
 
-# Remove the old database update since we're handling it above
-# db_from_env = dj_database_url.config(conn_max_age=600)
-# DATABASES['default'].update(db_from_env)
+# Heroku Settings
+if 'DYNO' in os.environ:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    ALLOWED_HOSTS = ['kent-e-commerce-backend-6329a7fdf12e.herokuapp.com', '.herokuapp.com']
+    DEBUG = False
+else:
+    SECURE_SSL_REDIRECT = False
+    DEBUG = True
+    ALLOWED_HOSTS = ['*']
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
